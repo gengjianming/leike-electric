@@ -1,0 +1,16 @@
+# macOS
+.DS_Store
+._*
+
+# 本地工具配置
+.claude/
+
+# 公司与内部资料（不对外发布）
+雷科知识库/
+网址docx.docx
+
+# 本地版本存档（见 CLAUDE.md，不进公开站点）
+versions/
+
+# 对话记录（本地私人记录，不随公开仓库发布）
+duihua.md
