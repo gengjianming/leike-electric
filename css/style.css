@@ -193,12 +193,16 @@ input, textarea, select { font: inherit; color: inherit; }
 .bg-dark .sec-head p { color: var(--on-dark-soft); }
 
 .sec-head-row {
+  /* Overrides .sec-head's 720px cap, which otherwise crushes the flex row. */
+  max-width: none;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: var(--sp-6);
   margin-bottom: var(--sp-7);
 }
+.sec-head-row > * { min-width: 0; }
+.sec-head-row > .btn { flex: 0 0 auto; white-space: nowrap; }
 
 /* ---------- 6. Buttons ---------- */
 .btn {
@@ -246,9 +250,11 @@ input, textarea, select { font: inherit; color: inherit; }
 
 .bg-dark .btn-ghost,
 .hero .btn-ghost,
+.hero-photo .btn-ghost,
 .page-banner .btn-ghost { --btn-fg: #fff; --btn-bd: rgba(255,255,255,.28); }
 .bg-dark .btn-ghost:hover,
 .hero .btn-ghost:hover,
+.hero-photo .btn-ghost:hover,
 .page-banner .btn-ghost:hover {
   --btn-bd: var(--gold-400); --btn-fg: var(--gold-300); background: rgba(255,255,255,.05);
 }
@@ -883,6 +889,8 @@ input, textarea, select { font: inherit; color: inherit; }
 .split-copy p { color: var(--ink-soft); margin-bottom: var(--sp-4); line-height: 1.95; }
 
 .check-list { margin: var(--sp-5) 0 var(--sp-6); display: grid; gap: 12px; }
+/* The label is a flex item, so without this it shrinks and breaks mid-word. */
+.check-list li > b { flex: none; white-space: nowrap; }
 .check-list li {
   display: flex;
   align-items: flex-start;
@@ -1678,7 +1686,10 @@ input, textarea, select { font: inherit; color: inherit; }
   .form-row { grid-template-columns: 1fr; gap: 0; }
 
   .hero-meta { gap: 8px 20px; }
-  .hero-actions .btn { flex: 1; min-width: 140px; }
+  /* Basis 180px + wrap: two buttons share the row on tablets, and each takes a
+     full line on phones rather than breaking its label across two lines. */
+  .hero-actions { flex-wrap: wrap; }
+  .hero-actions .btn { flex: 1 1 180px; min-width: 0; white-space: nowrap; }
   .hero-float { padding: 12px 16px; gap: 10px; }
   .hero-float .hf-ico { width: 34px; height: 34px; }
 
@@ -1746,4 +1757,319 @@ input, textarea, select { font: inherit; color: inherit; }
   .site-header, .topbar, .drawer, .scrim, .to-top, .cta-band, .hero-art { display: none !important; }
   body { color: #000; }
   .reveal { opacity: 1; transform: none; }
+}
+
+/* =============================================================
+   27. 实拍图组件
+   ============================================================= */
+
+/* ---------- 27.1 照片 Hero ---------- */
+.hero-photo {
+  position: relative;
+  background: var(--navy-900);
+  color: var(--on-dark);
+  overflow: hidden;
+  isolation: isolate;
+}
+.hero-photo .hp-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: 64% center;
+  z-index: -2;
+}
+.hero-photo::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(100deg,
+      rgba(6,23,46,.96) 0%,
+      rgba(6,23,46,.90) 30%,
+      rgba(7,26,52,.66) 56%,
+      rgba(6,23,46,.30) 82%,
+      rgba(6,23,46,.42) 100%),
+    linear-gradient(0deg, rgba(6,23,46,.86) 0%, rgba(6,23,46,0) 42%);
+}
+.hero-photo-in {
+  max-width: 680px;
+  /* Vertical rhythm only — leaving the horizontal axis to .container keeps the
+     gutter at every width (a shorthand here would zero it out). */
+  padding-top: clamp(76px, 12vw, 152px);
+  padding-bottom: clamp(84px, 13vw, 168px);
+}
+.hero-photo-in .hero-sub { max-width: 560px; }
+
+/* 底部数据条压在 Hero 上 */
+.hero-photo .stats { margin-top: 0; }
+
+/* ---------- 27.2 产品卡（实拍图） ---------- */
+.prod-sec { padding: var(--sp-9) 0; }
+.prod-sec + .prod-sec { padding-top: 0; }
+
+.pgrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-5);
+}
+
+.pcard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  transition: transform .45s var(--ease), box-shadow .45s var(--ease), border-color .45s var(--ease);
+}
+.pcard:hover {
+  transform: translateY(-6px);
+  border-color: transparent;
+  box-shadow: var(--sh-lg);
+}
+.pcard-media {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: var(--gray-50);
+  overflow: hidden;
+}
+.pcard-media img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform .7s var(--ease);
+}
+.pcard:hover .pcard-media img { transform: scale(1.06); }
+.pcard-media::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--blue-600), var(--gold-400));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .45s var(--ease);
+}
+.pcard:hover .pcard-media::after { transform: scaleX(1); }
+
+.pcard-body {
+  padding: var(--sp-5) var(--sp-5) var(--sp-6);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+}
+.pcard-cat {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px 10px;
+  border-radius: 4px;
+  background: var(--blue-100);
+  color: var(--blue-600);
+  font-size: .72rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+}
+.pcard-body h3 {
+  font-size: 1.06rem;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.5;
+}
+.pcard-body p {
+  font-size: .87rem;
+  line-height: 1.8;
+  color: var(--ink-mute);
+}
+.pcard-spec {
+  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+  font-size: .8rem;
+  color: var(--ink-soft);
+  line-height: 1.7;
+}
+
+/* ---------- 27.3 车间 / 图集 ---------- */
+.gal {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--sp-4);
+}
+.gal-item {
+  position: relative;
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--gray-100);
+  aspect-ratio: 4 / 3;
+}
+.gal-item img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform .7s var(--ease);
+}
+.gal-item:hover img { transform: scale(1.05); }
+.gal-item figcaption {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 34px 18px 15px;
+  background: linear-gradient(0deg, rgba(6,23,46,.9), transparent);
+  color: #fff;
+  font-size: .86rem;
+  letter-spacing: .03em;
+}
+.gal-item.wide { grid-column: span 2; }
+
+/* 大图（车间首图） */
+.gal-hero {
+  position: relative;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  aspect-ratio: 21 / 9;
+  background: var(--gray-100);
+}
+.gal-hero img { width: 100%; height: 100%; object-fit: cover; }
+.gal-hero figcaption {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 60px 28px 22px;
+  background: linear-gradient(0deg, rgba(6,23,46,.88), transparent);
+  color: #fff;
+  font-size: 1rem;
+  letter-spacing: .04em;
+}
+
+/* ---------- 27.4 设备网格 ---------- */
+.eq-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--sp-4);
+}
+.eq {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  transition: border-color .35s var(--ease), box-shadow .35s var(--ease);
+}
+.eq:hover { border-color: var(--blue-400); box-shadow: var(--sh-sm); }
+.eq img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: var(--gray-50);
+  display: block;
+}
+.eq span {
+  display: block;
+  padding: 10px 12px;
+  font-size: .8rem;
+  color: var(--ink-soft);
+  text-align: center;
+  line-height: 1.5;
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- 27.5 证书缩略图 ---------- */
+.shot-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--sp-4);
+}
+.shot {
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  background: #fff;
+  transition: transform .35s var(--ease), box-shadow .35s var(--ease), border-color .35s var(--ease);
+}
+.shot:hover {
+  transform: translateY(-4px);
+  border-color: var(--gold-400);
+  box-shadow: var(--sh-md);
+}
+.shot img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  background: var(--gray-50);
+}
+.shot span {
+  display: block;
+  padding: 9px 10px;
+  font-size: .74rem;
+  color: var(--ink-soft);
+  text-align: center;
+  line-height: 1.45;
+  border-top: 1px solid var(--line);
+}
+
+/* ---------- 27.6 经营范围清单 ---------- */
+.biz {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px var(--sp-5);
+}
+.biz li {
+  position: relative;
+  padding-left: 20px;
+  font-size: .9rem;
+  line-height: 1.85;
+  color: var(--ink-soft);
+}
+.biz li::before {
+  content: "";
+  position: absolute;
+  left: 0; top: .68em;
+  width: 7px; height: 7px;
+  border-radius: 2px;
+  background: var(--gold-500);
+  transform: rotate(45deg);
+}
+
+/* ---------- 27.7 品牌 Logo ---------- */
+.brand-logo { height: 46px; width: auto; display: block; }
+.drawer-head .brand-logo { height: 42px; }
+.foot-brand .brand-logo {
+  height: 52px;
+  background: #fff;
+  border-radius: 10px;
+  padding: 6px 10px;
+}
+
+/* ---------- 27.8 响应式 ---------- */
+@media (max-width: 1180px) {
+  .shot-grid { grid-template-columns: repeat(5, 1fr); }
+  .eq-grid { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 1024px) {
+  .pgrid { grid-template-columns: repeat(2, 1fr); }
+  .gal { grid-template-columns: repeat(2, 1fr); }
+  .gal-item.wide { grid-column: span 2; }
+  .shot-grid { grid-template-columns: repeat(4, 1fr); }
+  .eq-grid { grid-template-columns: repeat(3, 1fr); }
+  .biz { grid-template-columns: repeat(2, 1fr); }
+  .hero-photo .hp-bg { object-position: 70% center; }
+  .hero-photo-in { max-width: 100%; }
+}
+@media (max-width: 768px) {
+  .pgrid { grid-template-columns: 1fr; gap: var(--sp-4); }
+  .gal { grid-template-columns: 1fr; gap: var(--sp-3); }
+  .gal-item.wide { grid-column: span 1; }
+  .gal-hero { aspect-ratio: 16 / 10; }
+  .shot-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .eq-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .biz { grid-template-columns: 1fr; }
+  .hero-photo .hp-bg { object-position: 72% center; }
+  .brand-logo { height: 40px; }
+}
+@media (max-width: 420px) {
+  .shot-grid { grid-template-columns: repeat(2, 1fr); }
+  .eq-grid { grid-template-columns: repeat(2, 1fr); }
+  .gal-hero figcaption { padding: 40px 16px 16px; font-size: .9rem; }
 }
